@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -56,9 +58,9 @@ body{font-family:"Outfit",sans-serif;background:var(--bg);color:var(--text);min-
 .fg select option{background:#edf5fd}
 
 /* KPIs — 5 cards */
-.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin-bottom:10px}
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin-bottom:10px;align-items:start}
 .kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
-  padding:12px 14px;position:relative;overflow:hidden;transition:transform .15s;cursor:default}
+  padding:12px 14px;position:relative;overflow:hidden;transition:transform .15s;cursor:default;height:auto}
 .kpi:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(30,90,160,0.14)}
 .kpi::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--kc,var(--sky))}
 .kpi-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:7px}
@@ -176,7 +178,7 @@ body{font-family:"Outfit",sans-serif;background:var(--bg);color:var(--text);min-
   </div>
 </div>
 
-<!-- FILTERS -->
+<!-- FILTERS (FROZEN) -->
 <div class="filters">
   <div class="fg"><label>📅 Month &amp; Year</label><select id="f-month"></select></div>
   <div class="fg"><label>🗺️ Zone</label><select id="f-zone"></select></div>
@@ -203,42 +205,52 @@ body{font-family:"Outfit",sans-serif;background:var(--bg);color:var(--text);min-
     <div class="kpi-lbl">Pending</div><div class="kpi-sub">Logged − Closed (same month)</div>
   </div>
   <div class="kpi" style="--kc:#7c3aed">
-    <div class="kpi-top"><div class="kpi-icon">🔄</div><div class="kpi-badge fl" id="b-old">—</div></div>
+    <div class="kpi-top"><div class="kpi-icon">🔄</div><div class="kpi-badge fl" id="b-old" style="display:none">—</div></div>
     <div class="kpi-val" id="v-old">0</div>
     <div class="kpi-lbl">Old Closed</div><div class="kpi-sub">Closed this month, logged prior</div>
   </div>
   <div class="kpi" style="--kc:#e11d48">
-    <div class="kpi-top"><div class="kpi-icon">📊</div><div class="kpi-badge fl" id="b-overall">—</div></div>
+    <div class="kpi-top"><div class="kpi-icon">📊</div><div class="kpi-badge fl" id="b-overall" style="display:none">—</div></div>
     <div class="kpi-val" id="v-overall">0</div>
-    <div class="kpi-lbl">Overall Pending</div><div class="kpi-sub">All pending cases till selected month</div>
-  
+    <div class="kpi-lbl">Overall Pending</div>
+    <div class="kpi-sub">All pending cases till selected month</div>
+    <div style="display:flex;gap:5px;margin-top:5px;flex-wrap:wrap">
+      <div class="kpi-badge dn" style="font-size:10px;padding:2px 7px;gap:3px">▲ <span id="v-overall-gt30">0</span> &gt;30d</div>
+      <div class="kpi-badge fl" style="font-size:10px;padding:2px 7px;gap:3px;background:rgba(37,99,235,0.1);color:#2563eb">● <span id="v-overall-lt30">0</span> &lt;30d</div>
+    </div>
 </div>
 </div>
 
-<!-- ROW 1: TAT Line + CP Breakdown -->
+<!-- ROW 1: Top 15 Stores + Zone-wise -->
 <div class="r2">
-  <div class="chart-card" style="display:flex;flex-direction:column">
-    <div class="chart-title">📊 TAT Status — Selected Month</div>
-    <div class="chart-sub" id="tat-sub">Within TAT vs Beyond TAT for logged cases</div>
-    <div style="display:flex;align-items:center;justify-content:center;gap:28px;flex:1;padding:12px 8px">
-      <div style="position:relative;width:220px;height:220px;flex-shrink:0"><canvas id="ch-tat" style="position:absolute;top:0;left:0;width:220px!important;height:220px!important"></canvas></div>
-      <div id="tat-legend" style="display:flex;flex-direction:column;gap:18px"></div>
-    </div>
+  <div class="chart-card">
+    <div class="chart-title">🏪 Top 15 Stores — Logged Cases</div>
+    <div class="chart-sub">Stores with highest logged case count</div>
+    <canvas id="ch-store" height="150"></canvas>
   </div>
+  <div class="chart-card">
+    <div class="chart-title">🌍 Zone-wise — Logged · Closed · Pending</div>
+    <div class="chart-sub" id="zone-chart-sub">All zones comparison</div>
+    <canvas id="ch-zone" height="150"></canvas>
+  </div>
+</div>
+
+<!-- ROW 2: Critical Product + Critical Product Names -->
+<div class="r2">
   <div class="chart-card">
     <div class="chart-title">🏷️ Critical Product — Logged · Closed · Pending</div>
-    <div class="chart-sub">Critical Product vs Others</div>
-    <canvas id="ch-cp" height="140"></canvas>
+    <div class="chart-sub" id="cp-chart-sub">Critical Product vs Others</div>
+    <canvas id="ch-cp" height="145"></canvas>
   </div>
-</div>
-
-<!-- ROW 2: CP Names + FM Closed >30 -->
-<div class="r2">
   <div class="chart-card">
-    <div class="chart-title">🔍 Critical Product Names — Logged · Closed · Pending</div>
+    <div class="chart-title">🔍 Critical Case - bifurcation of product Names</div>
     <div class="chart-sub">Per critical product type breakdown</div>
     <canvas id="ch-cpn" height="145"></canvas>
   </div>
+</div>
+
+<!-- ROW 3: FM-wise Closed >30 + TAT Status -->
+<div class="r2">
   <div class="chart-card">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px">
       <div>
@@ -252,35 +264,24 @@ body{font-family:"Outfit",sans-serif;background:var(--bg);color:var(--text);min-
     </div>
     <canvas id="ch-fm" height="140"></canvas>
   </div>
+  <div class="chart-card" style="display:flex;flex-direction:column">
+    <div class="chart-title">📊 TAT Status - Closed Case</div>
+    <div class="chart-sub" id="tat-sub">Within TAT vs Beyond TAT for logged cases</div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:28px;flex:1;padding:12px 8px">
+      <div style="position:relative;width:220px;height:220px;flex-shrink:0"><canvas id="ch-tat" style="position:absolute;top:0;left:0;width:220px!important;height:220px!important"></canvas></div>
+      <div id="tat-legend" style="display:flex;flex-direction:column;gap:18px"></div>
+    </div>
+  </div>
 </div>
 
-<!-- ROW 3: Pending >30 trend + Delay Reason -->
-<div class="r2b">
-  <div class="chart-card">
-    <div class="chart-title">🏪 Top 15 Stores — Logged Cases</div>
-    <div class="chart-sub">Stores with highest logged case count</div>
-    <canvas id="ch-store" height="150"></canvas>
-  </div>
+<!-- ROW 4: Last Delay Reason -->
+<div class="r2">
   <div class="chart-card">
     <div class="chart-title">⚠️ Last Delay Reason — Pending Cases</div>
     <div class="chart-sub">Case count &amp; avg aging — pending cases by logged month</div>
     <div id="delay-list" class="delay-list" style="max-height:200px;overflow-y:auto;margin-top:4px"></div>
   </div>
-</div>
-
-<!-- ROW 4: Pending >30 days monthly trend -->
-<div class="r2">
-  <div class="chart-card">
-    <div class="chart-title">🔥 Overall Pending &gt;30 Days — Monthly Trend</div>
-    <div class="chart-sub">Count of pending cases with aging &gt; 30 days per month (frozen snapshot)</div>
-    <canvas id="ch-pend30" height="130"></canvas>
-  </div>
-  <!-- ROW 4b: Zone wise -->
-  <div class="chart-card">
-    <div class="chart-title">🌍 Zone-wise — Logged · Closed · Pending</div>
-    <div class="chart-sub">All zones comparison</div>
-    <canvas id="ch-zone" height="130"></canvas>
-  </div>
+  <div class="chart-card" style="opacity:0;pointer-events:none"></div>
 </div>
 
 </div>
@@ -333,16 +334,19 @@ document.getElementById("rec-count").textContent=RAW.length.toLocaleString();
 function fillSel(id,vals,lbl){
   const el=document.getElementById(id);
   el.innerHTML=`<option value="">All ${lbl}</option>`;
-  vals.forEach(v=>el.innerHTML+=`<option value="${v}">${v}</option>`);
+  // Frozen: Don't add other options
 }
+// FROZEN SLICERS - Only show single option each
 const mSel=document.getElementById("f-month");
-mSel.innerHTML="<option value=''>All Months</option>";
-SLICER_MONTHS.forEach(m=>mSel.innerHTML+=`<option value="${m}">${m}</option>`);
-mSel.value=SLICER_MONTHS[SLICER_MONTHS.length-1];
-fillSel("f-zone",ALL_ZONES,"Zones");
-fillSel("f-vendor",ALL_VENDORS,"Vendors");
-fillSel("f-store",ALL_STORES,"Stores");
-fillSel("f-cp",["Critical Product","Others"],"Category");
+mSel.innerHTML="<option value=\"Mar'26\">Mar'26</option>";
+mSel.value="Mar'26";
+
+// Zone, Vendor, Store, Critical Product - Only "All" option
+document.getElementById("f-zone").innerHTML="<option value=''>All Zones</option>";
+document.getElementById("f-vendor").innerHTML="<option value=''>All Vendors</option>";
+document.getElementById("f-store").innerHTML="<option value=''>All Stores</option>";
+document.getElementById("f-cp").innerHTML="<option value=''>All Category</option>";
+
 ["f-month","f-zone","f-vendor","f-store","f-cp"].forEach(id=>
   document.getElementById(id).addEventListener("change",render));
 
@@ -449,6 +453,41 @@ function render(){
   animNum("v-logged",kSnap.lg);animNum("v-closed",kSnap.cl);animNum("v-pending",kSnap.pe);
   animNum("v-old",kSnap.oc);animNum("v-overall",kSnap.op);
 
+  // Calculate Overall Pending breakdown: >30 days and <=30 days
+  // Use AGING_BREAKDOWN_SNAP if available, otherwise calculate from base data
+  let pendingGt30, pendingLt30;
+  
+  if(sM && AGING_BREAKDOWN_SNAP[sM]){
+    // Use snapshot data from uploaded Excel file
+    pendingGt30 = AGING_BREAKDOWN_SNAP[sM].gt30;
+    pendingLt30 = AGING_BREAKDOWN_SNAP[sM].lt30;
+  } else {
+    // Calculate from base data (fallback for months without snapshot)
+    const selectedMonthIndex=sM?ALL_KPI_MONTHS.indexOf(sM):-1;
+    
+    // Filter pending cases logged on or before selected month (using month index comparison)
+    const allPending=base.filter(d=>{
+      if(d.fs!=="Pending")return false;
+      if(!sM)return true; // If no month selected, include all pending
+      const caseLmyIndex=ALL_KPI_MONTHS.indexOf(d.lmy);
+      return caseLmyIndex>=0&&caseLmyIndex<=selectedMonthIndex;
+    });
+    
+    // Count by current aging (no adjustment)
+    pendingGt30=allPending.filter(d=>{
+      const age=parseFloat(d.aging);
+      return !isNaN(age)&&age>30;
+    }).length;
+    
+    pendingLt30=allPending.filter(d=>{
+      const age=parseFloat(d.aging);
+      return !isNaN(age)&&age<=30;
+    }).length;
+  }
+  
+  animNum("v-overall-gt30",pendingGt30);
+  animNum("v-overall-lt30",pendingLt30);
+
   if(sM&&KPI_SNAP[sM]){
     const mIdx=ALL_KPI_MONTHS.indexOf(sM);
     if(mIdx>0){
@@ -486,19 +525,104 @@ function render(){
       '<div style="font-size:10px;color:#4a7aaa;margin-top:2px">'+item.label+'</div></div></div>';
   }).join("");
 
-  // CP BREAKDOWN
-  const bCP=sM?base.filter(d=>d.lmy===sM):base;
-  mkBar("ch-cp",["Critical Product","Others"],L3.map((lbl,i)=>({
-    label:lbl,data:["Critical Product","Others"].map(g=>calc(bCP.filter(d=>d.cp===g),sM)[i]),
-    backgroundColor:C3[i],borderRadius:3
-  })));
+  // CP BREAKDOWN — Using CP_SNAP from Master-VMM
+  // Logged = Cases logged IN selected month
+  // Closed = Cases closed IN selected month
+  // Pending = Overall pending (no month filter)
+  
+  // Update chart subtitle based on selection
+  document.getElementById("cp-chart-sub").textContent = sM 
+    ? `Closed = In ${sM} | Pending = Overall`
+    : "Critical Product vs Others";
+  
+  const cpLabels = ["Critical Product", "Others"];
+  
+  // Use snapshot data when no filters applied, otherwise calculate from filtered base
+  const hasFilters = sZ || sV || sSt;
+  
+  const cpData = cpLabels.map(cat => {
+    const key = cat === "Critical Product" ? "cp" : "ot";
+    
+    if(!sM) {
+      // No month selected: show all from base data
+      const catRecs = base.filter(d => d.cp === cat);
+      return [catRecs.length, catRecs.filter(d => d.fs === "Closed").length, catRecs.filter(d => d.fs === "Pending").length];
+    }
+    
+    if(hasFilters) {
+      // Filters applied: calculate from filtered base data
+      const catRecs = base.filter(d => d.cp === cat);
+      const lg = catRecs.filter(d => d.lmy === sM).length;
+      // Closed IN selected month (not cumulative)
+      const cl = catRecs.filter(d => d.fs === "Closed" && d.cmy === sM).length;
+      const pe = catRecs.filter(d => d.fs === "Pending").length;
+      return [lg, cl, pe];
+    }
+    
+    // No filters: use snapshot data from Master-VMM
+    const snap = CP_SNAP[sM] && CP_SNAP[sM][key] ? CP_SNAP[sM][key] : {lg: 0, cl: 0};
+    const pending = CP_PENDING[key] || 0;
+    return [snap.lg, snap.cl, pending];
+  });
+  
+  const cpDatasets = L3.map((lbl, i) => ({
+    label: lbl,
+    data: cpData.map(d => d[i]),
+    backgroundColor: C3[i],
+    borderRadius: 3
+  }));
+  mkBar("ch-cp", cpLabels, cpDatasets);
 
-  // CP NAMES
-  const cpNM={};
-  bCP.filter(d=>d.cp==="Critical Product").forEach(d=>{const n=d.pn||"Unknown";if(!cpNM[n])cpNM[n]=[];cpNM[n].push(d);});
-  const cpA=Object.entries(cpNM).sort((a,b)=>b[1].length-a[1].length).slice(0,8);
-  mkBar("ch-cpn",cpA.map(([n])=>n),L3.map((lbl,i)=>({
-    label:lbl,data:cpA.map(([,r])=>calc(r,sM)[i]),backgroundColor:C3[i],borderRadius:3
+  // CP NAMES - Using CPN_SNAP from Master-VMM
+  // Logged = Cases logged IN selected month
+  // Closed = Cases closed IN selected month
+  // Pending = Overall pending (no month filter)
+  
+  // Use snapshot data when no filters applied, otherwise calculate from filtered base
+  const cpnHasFilters = sZ || sV || sSt;
+  
+  // Map product names to keys
+  const cpnKeyMap = {
+    "AC": "AC",
+    "Led Light": "Led_Light",
+    "Server Room Ac": "Server_Room_Ac",
+    "Genset": "Genset",
+    "Sensormatic": "Sensormatic",
+    "Electrical": "Electrical",
+    "Tiles": "Tiles",
+    "Electrical Panel": "Electrical_Panel"
+  };
+  
+  const cpnData = CPN_LABELS.map(pn => {
+    const key = cpnKeyMap[pn];
+    
+    if(!sM) {
+      // No month selected: calculate from base data
+      const pnRecs = base.filter(d => d.cp === "Critical Product" && d.pn === pn);
+      return [pnRecs.length, pnRecs.filter(d => d.fs === "Closed").length, pnRecs.filter(d => d.fs === "Pending").length];
+    }
+    
+    if(cpnHasFilters) {
+      // Filters applied: calculate from filtered base data
+      const pnRecs = base.filter(d => d.cp === "Critical Product" && d.pn === pn);
+      const lg = pnRecs.filter(d => d.lmy === sM).length;
+      // Closed IN selected month
+      const cl = pnRecs.filter(d => d.fs === "Closed" && d.cmy === sM).length;
+      const pe = pnRecs.filter(d => d.fs === "Pending").length;
+      return [lg, cl, pe];
+    }
+    
+    // No filters: use snapshot data from Master-VMM
+    const snap = CPN_SNAP[sM] && CPN_SNAP[sM][key] ? CPN_SNAP[sM][key] : {lg: 0, cl: 0};
+    const pending = CPN_PENDING[key] || 0;
+    return [snap.lg, snap.cl, pending];
+  });
+  
+  mkBar("ch-cpn", CPN_LABELS, L3.map((lbl, i) => ({
+    label: lbl,
+    data: cpnData.map(d => d[i]),
+    backgroundColor: C3[i],
+    borderRadius: 3
   })));
 
   // FM CLOSED >30 (frozen snapshot + live filter)
@@ -525,29 +649,36 @@ function render(){
   const stArr=Object.entries(stMap).sort((a,b)=>b[1]-a[1]).slice(0,15);
   mkBar("ch-store",stArr.map(([s])=>s),[{
     label:"Logged",data:stArr.map(([,c])=>c),
-    backgroundColor:"rgba(124,58,237,0.75)",borderRadius:3
-  }],{dl:{formatter:v=>v>0?v:""},
+    backgroundColor:"rgba(167,139,250,0.85)",borderRadius:3
+  }],{dl:{formatter:v=>v>0?v:"",color:"#fff",font:{weight:"700",size:11}},
     extra:{plugins:{legend:{display:false}}},
     x:{...SB,ticks:{...TX,maxRotation:38,minRotation:30}}});
 
   // FM cumulative chart rendered once on load — fixed, not affected by filters
 
-  // PENDING >30 TREND (frozen snapshot — graph only)
-  const p30labels=ALL_MONTHS;
-  const p30data=p30labels.map(m=>SNAP.pend30_monthly[m]||0);
-  mkLine("ch-pend30",p30labels,[{
-    label:"Pending >30 Days",
-    data:p30data,
-    borderColor:"rgba(234,88,12,0.9)",backgroundColor:"rgba(234,88,12,0.08)",
-    pointBackgroundColor:p30labels.map(m=>sM&&m===sM?"#ea580c":"rgba(234,88,12,0.6)"),
-    pointRadius:p30labels.map(m=>sM&&m===sM?5:3),
-    tension:0.38,fill:true,borderWidth:2
-  }]);
-
-  // ZONE
-  mkBar("ch-zone",ALL_ZONES,L3.map((lbl,i)=>({
-    label:lbl,data:ALL_ZONES.map(z=>calc(base.filter(d=>d.zone===z),sM)[i]),
-    backgroundColor:C3[i],borderRadius:3
+  // ZONE — Using ZONE_SNAP: Logged & Closed from selected month, Pending = Overall
+  // Update zone chart subtitle
+  document.getElementById("zone-chart-sub").textContent = sM 
+    ? `Closed = In ${sM} | Pending = Overall`
+    : "All zones comparison";
+  
+  const zoneData = ALL_ZONES.map(z => {
+    if(!sM) {
+      // No month selected: calculate from base data
+      const zRecs = base.filter(d => d.zone === z);
+      return [zRecs.length, zRecs.filter(d => d.fs === "Closed").length, zRecs.filter(d => d.fs === "Pending").length];
+    }
+    // Use snapshot data for selected month
+    const snap = ZONE_SNAP[sM] && ZONE_SNAP[sM][z] ? ZONE_SNAP[sM][z] : {lg: 0, cl: 0};
+    const pending = ZONE_PENDING[z] || 0;
+    return [snap.lg, snap.cl, pending];
+  });
+  
+  mkBar("ch-zone", ALL_ZONES, L3.map((lbl, i) => ({
+    label: lbl,
+    data: zoneData.map(d => d[i]),
+    backgroundColor: C3[i],
+    borderRadius: 3
   })));
 
   // DELAY REASON — from SNAP for known months, RAW fallback otherwise
@@ -598,6 +729,22 @@ function animNum(id,target){
 }
 
 const KPI_SNAP={"Feb'25":{"lg":507,"cl":174,"pe":333,"oc":0,"op":0},"Mar'25":{"lg":714,"cl":217,"pe":497,"oc":171,"op":0},"Apr'25":{"lg":808,"cl":186,"pe":622,"oc":352,"op":0},"May'25":{"lg":761,"cl":247,"pe":514,"oc":535,"op":0},"Jun'25":{"lg":812,"cl":257,"pe":555,"oc":523,"op":0},"Jul'25":{"lg":1372,"cl":414,"pe":958,"oc":442,"op":39},"Aug'25":{"lg":987,"cl":189,"pe":798,"oc":746,"op":46},"Sep'25":{"lg":1181,"cl":357,"pe":824,"oc":747,"op":65},"Oct'25":{"lg":641,"cl":226,"pe":415,"oc":961,"op":83},"Nov'25":{"lg":551,"cl":190,"pe":361,"oc":598,"op":101},"Dec'25":{"lg":644,"cl":206,"pe":438,"oc":512,"op":157},"Jan'26":{"lg":826,"cl":254,"pe":572,"oc":455,"op":334},"Feb'26":{"lg":1535,"cl":348,"pe":1187,"oc":511,"op":1521},"Mar'26":{"lg":1597,"cl":417,"pe":1180,"oc":1233,"op":1468}};
+
+const ZONE_SNAP={"Feb'25":{"Central":{lg:47,cl:22},"East":{lg:82,cl:30},"North":{lg:136,cl:43},"North-East":{lg:58,cl:18},"South":{lg:171,cl:57},"West":{lg:13,cl:4}},"Mar'25":{"Central":{lg:53,cl:25},"East":{lg:102,cl:50},"North":{lg:283,cl:158},"North-East":{lg:72,cl:39},"South":{lg:185,cl:100},"West":{lg:19,cl:16}},"Apr'25":{"Central":{lg:89,cl:57},"East":{lg:93,cl:81},"North":{lg:329,cl:205},"North-East":{lg:52,cl:58},"South":{lg:219,cl:123},"West":{lg:26,cl:14}},"May'25":{"Central":{lg:90,cl:94},"East":{lg:99,cl:88},"North":{lg:307,cl:327},"North-East":{lg:75,cl:56},"South":{lg:167,cl:197},"West":{lg:23,cl:20}},"Jun'25":{"Central":{lg:84,cl:105},"East":{lg:127,cl:118},"North":{lg:326,cl:277},"North-East":{lg:70,cl:76},"South":{lg:166,cl:166},"West":{lg:39,cl:38}},"Jul'25":{"Central":{lg:201,cl:106},"East":{lg:149,cl:114},"North":{lg:553,cl:315},"North-East":{lg:106,cl:77},"South":{lg:290,cl:201},"West":{lg:73,cl:43}},"Aug'25":{"Central":{lg:99,cl:101},"East":{lg:183,cl:97},"North":{lg:396,cl:481},"North-East":{lg:94,cl:75},"South":{lg:187,cl:147},"West":{lg:28,cl:34}},"Sep'25":{"Central":{lg:128,cl:131},"East":{lg:112,cl:183},"North":{lg:543,cl:397},"North-East":{lg:101,cl:115},"South":{lg:253,cl:236},"West":{lg:44,cl:42}},"Oct'25":{"Central":{lg:87,cl:136},"East":{lg:86,cl:154},"North":{lg:217,cl:542},"North-East":{lg:67,cl:55},"South":{lg:169,cl:269},"West":{lg:15,cl:31}},"Nov'25":{"Central":{lg:69,cl:71},"East":{lg:68,cl:116},"North":{lg:193,cl:249},"North-East":{lg:46,cl:123},"South":{lg:157,cl:196},"West":{lg:18,cl:33}},"Dec'25":{"Central":{lg:84,cl:118},"East":{lg:104,cl:92},"North":{lg:188,cl:249},"North-East":{lg:46,cl:51},"South":{lg:200,cl:182},"West":{lg:22,cl:26}},"Jan'26":{"Central":{lg:63,cl:76},"East":{lg:87,cl:100},"North":{lg:291,cl:241},"North-East":{lg:61,cl:55},"South":{lg:273,cl:211},"West":{lg:51,cl:26}},"Feb'26":{"Central":{lg:113,cl:89},"East":{lg:291,cl:178},"North":{lg:662,cl:277},"North-East":{lg:57,cl:64},"South":{lg:298,cl:205},"West":{lg:114,cl:46}},"Mar'26":{"Central":{lg:166,cl:117},"East":{lg:242,cl:263},"North":{lg:664,cl:713},"North-East":{lg:93,cl:65},"South":{lg:278,cl:373},"West":{lg:154,cl:119}}};
+
+const ZONE_PENDING={"Central":125,"East":161,"North":614,"North-East":71,"South":350,"West":147};
+
+const CP_SNAP={"Feb'25":{"cp":{lg:196,cl:68},"ot":{lg:311,cl:106}},"Mar'25":{"cp":{lg:382,cl:180},"ot":{lg:332,cl:208}},"Apr'25":{"cp":{lg:404,cl:249},"ot":{lg:404,cl:289}},"May'25":{"cp":{lg:408,cl:411},"ot":{lg:353,cl:371}},"Jun'25":{"cp":{lg:430,cl:481},"ot":{lg:382,cl:299}},"Jul'25":{"cp":{lg:554,cl:402},"ot":{lg:818,cl:454}},"Aug'25":{"cp":{lg:442,cl:406},"ot":{lg:545,cl:529}},"Sep'25":{"cp":{lg:567,cl:525},"ot":{lg:614,cl:579}},"Oct'25":{"cp":{lg:283,cl:534},"ot":{lg:358,cl:653}},"Nov'25":{"cp":{lg:198,cl:307},"ot":{lg:353,cl:481}},"Dec'25":{"cp":{lg:206,cl:267},"ot":{lg:438,cl:451}},"Jan'26":{"cp":{lg:236,cl:215},"ot":{lg:590,cl:494}},"Feb'26":{"cp":{lg:347,cl:221},"ot":{lg:1188,cl:638}},"Mar'26":{"cp":{lg:418,cl:440},"ot":{lg:1179,cl:1210}}};
+
+const CP_PENDING={"cp":365,"ot":1103};
+
+const CPN_SNAP={"Feb'25":{"AC":{lg:68,cl:26},"Led_Light":{lg:36,cl:6},"Server_Room_Ac":{lg:34,cl:15},"Genset":{lg:20,cl:6},"Sensormatic":{lg:14,cl:8},"Electrical":{lg:9,cl:2},"Tiles":{lg:13,cl:3},"Electrical_Panel":{lg:2,cl:2}},"Mar'25":{"AC":{lg:206,cl:86},"Led_Light":{lg:50,cl:20},"Server_Room_Ac":{lg:64,cl:34},"Genset":{lg:19,cl:10},"Sensormatic":{lg:20,cl:20},"Electrical":{lg:7,cl:6},"Tiles":{lg:13,cl:3},"Electrical_Panel":{lg:3,cl:1}},"Apr'25":{"AC":{lg:222,cl:103},"Led_Light":{lg:56,cl:41},"Server_Room_Ac":{lg:51,cl:49},"Genset":{lg:28,cl:20},"Sensormatic":{lg:12,cl:11},"Electrical":{lg:15,cl:11},"Tiles":{lg:14,cl:12},"Electrical_Panel":{lg:6,cl:2}},"May'25":{"AC":{lg:258,cl:234},"Led_Light":{lg:35,cl:56},"Server_Room_Ac":{lg:53,cl:50},"Genset":{lg:20,cl:22},"Sensormatic":{lg:12,cl:12},"Electrical":{lg:11,cl:15},"Tiles":{lg:10,cl:14},"Electrical_Panel":{lg:9,cl:8}},"Jun'25":{"AC":{lg:257,cl:309},"Led_Light":{lg:49,cl:45},"Server_Room_Ac":{lg:48,cl:67},"Genset":{lg:21,cl:23},"Sensormatic":{lg:22,cl:11},"Electrical":{lg:21,cl:13},"Tiles":{lg:6,cl:7},"Electrical_Panel":{lg:6,cl:6}},"Jul'25":{"AC":{lg:268,cl:218},"Led_Light":{lg:84,cl:50},"Server_Room_Ac":{lg:70,cl:51},"Genset":{lg:36,cl:22},"Sensormatic":{lg:19,cl:23},"Electrical":{lg:42,cl:24},"Tiles":{lg:14,cl:6},"Electrical_Panel":{lg:21,cl:8}},"Aug'25":{"AC":{lg:211,cl:205},"Led_Light":{lg:70,cl:56},"Server_Room_Ac":{lg:44,cl:47},"Genset":{lg:38,cl:33},"Sensormatic":{lg:27,cl:21},"Electrical":{lg:31,cl:25},"Tiles":{lg:18,cl:7},"Electrical_Panel":{lg:3,cl:12}},"Sep'25":{"AC":{lg:276,cl:268},"Led_Light":{lg:86,cl:80},"Server_Room_Ac":{lg:74,cl:57},"Genset":{lg:30,cl:32},"Sensormatic":{lg:28,cl:32},"Electrical":{lg:31,cl:35},"Tiles":{lg:36,cl:13},"Electrical_Panel":{lg:6,cl:8}},"Oct'25":{"AC":{lg:139,cl:250},"Led_Light":{lg:39,cl:82},"Server_Room_Ac":{lg:32,cl:55},"Genset":{lg:16,cl:41},"Sensormatic":{lg:29,cl:35},"Electrical":{lg:19,cl:37},"Tiles":{lg:4,cl:26},"Electrical_Panel":{lg:5,cl:8}},"Nov'25":{"AC":{lg:62,cl:137},"Led_Light":{lg:43,cl:58},"Server_Room_Ac":{lg:23,cl:32},"Genset":{lg:12,cl:16},"Sensormatic":{lg:30,cl:24},"Electrical":{lg:11,cl:13},"Tiles":{lg:9,cl:19},"Electrical_Panel":{lg:8,cl:8}},"Dec'25":{"AC":{lg:39,cl:93},"Led_Light":{lg:61,cl:58},"Server_Room_Ac":{lg:13,cl:28},"Genset":{lg:19,cl:17},"Sensormatic":{lg:29,cl:29},"Electrical":{lg:20,cl:19},"Tiles":{lg:19,cl:17},"Electrical_Panel":{lg:6,cl:6}},"Jan'26":{"AC":{lg:77,cl:57},"Led_Light":{lg:43,cl:43},"Server_Room_Ac":{lg:34,cl:17},"Genset":{lg:19,cl:19},"Sensormatic":{lg:20,cl:26},"Electrical":{lg:14,cl:26},"Tiles":{lg:19,cl:20},"Electrical_Panel":{lg:10,cl:7}},"Feb'26":{"AC":{lg:159,cl:69},"Led_Light":{lg:62,cl:48},"Server_Room_Ac":{lg:45,cl:31},"Genset":{lg:23,cl:18},"Sensormatic":{lg:23,cl:21},"Electrical":{lg:16,cl:9},"Tiles":{lg:14,cl:17},"Electrical_Panel":{lg:5,cl:8}},"Mar'26":{"AC":{lg:222,cl:198},"Led_Light":{lg:49,cl:74},"Server_Room_Ac":{lg:66,cl:71},"Genset":{lg:22,cl:28},"Sensormatic":{lg:24,cl:24},"Electrical":{lg:18,cl:18},"Tiles":{lg:10,cl:18},"Electrical_Panel":{lg:7,cl:9}}};
+
+const CPN_PENDING={"AC":211,"Led_Light":46,"Server_Room_Ac":47,"Genset":16,"Sensormatic":12,"Electrical":12,"Tiles":17,"Electrical_Panel":4};
+
+const CPN_LABELS=["AC","Led Light","Server Room Ac","Genset","Sensormatic","Electrical","Tiles","Electrical Panel"];
+
+const AGING_BREAKDOWN_SNAP={"Jan'26":{"gt30":276,"lt30":569},"Feb'26":{"gt30":312,"lt30":1209},"Mar'26":{"gt30":267,"lt30":1201}};
 
 const DELAY_SNAP={"Feb'25":{"Delay Due To Landlord":0,"Delay From HO Team":0,"Delay From Store":0,"Delay From Vendor Side":0,"Delay In Release Of PO":0,"Payment under process":0,"Product under observation":0,"Quotation Approval Pending From HO Facilities Team":0,"Vendor Has Payment Issues":0,"Work Is Delayed Due To FM":0},"Mar'25":{"Delay Due To Landlord":0,"Delay From HO Team":0,"Delay From Store":0,"Delay From Vendor Side":0,"Delay In Release Of PO":0,"Payment under process":0,"Product under observation":0,"Quotation Approval Pending From HO Facilities Team":0,"Vendor Has Payment Issues":0,"Work Is Delayed Due To FM":0},"Apr'25":{"Delay Due To Landlord":0,"Delay From HO Team":0,"Delay From Store":0,"Delay From Vendor Side":0,"Delay In Release Of PO":0,"Payment under process":0,"Product under observation":0,"Quotation Approval Pending From HO Facilities Team":0,"Vendor Has Payment Issues":0,"Work Is Delayed Due To FM":0},"May'25":{"Delay Due To Landlord":0,"Delay From HO Team":0,"Delay From Store":0,"Delay From Vendor Side":0,"Delay In Release Of PO":0,"Payment under process":0,"Product under observation":0,"Quotation Approval Pending From HO Facilities Team":0,"Vendor Has Payment Issues":0,"Work Is Delayed Due To FM":0},"Jun'25":{"Delay Due To Landlord":0,"Delay From HO Team":0,"Delay From Store":0,"Delay From Vendor Side":0,"Delay In Release Of PO":0,"Payment under process":0,"Product under observation":0,"Quotation Approval Pending From HO Facilities Team":0,"Vendor Has Payment Issues":0,"Work Is Delayed Due To FM":0},"Jul'25":{"Delay Due To Landlord":25,"Delay From HO Team":5,"Delay From Store":2,"Delay From Vendor Side":0,"Delay In Release Of PO":2,"Payment under process":0,"Product under observation":0,"Quotation Approval Pending From HO Facilities Team":2,"Vendor Has Payment Issues":0,"Work Is Delayed Due To FM":3},"Aug'25":{"Delay Due To Landlord":1,"Delay From HO Team":2,"Delay From Store":0,"Delay From Vendor Side":3,"Delay In Release Of PO":0,"Payment under process":0,"Product under observation":0,"Quotation Approval Pending From HO Facilities Team":0,"Vendor Has Payment Issues":0,"Work Is Delayed Due To FM":1},"Sep'25":{"Delay Due To Landlord":0,"Delay From HO Team":9,"Delay From Store":1,"Delay From Vendor Side":7,"Delay In Release Of PO":0,"Payment under process":1,"Product under observation":0,"Quotation Approval Pending From HO Facilities Team":0,"Vendor Has Payment Issues":0,"Work Is Delayed Due To FM":1},"Oct'25":{"Delay Due To Landlord":0,"Delay From HO Team":9,"Delay From Store":2,"Delay From Vendor Side":5,"Delay In Release Of PO":1,"Payment under process":0,"Product under observation":0,"Quotation Approval Pending From HO Facilities Team":1,"Vendor Has Payment Issues":0,"Work Is Delayed Due To FM":0},"Nov'25":{"Delay Due To Landlord":0,"Delay From HO Team":8,"Delay From Store":1,"Delay From Vendor Side":8,"Delay In Release Of PO":0,"Payment under process":0,"Product under observation":0,"Quotation Approval Pending From HO Facilities Team":1,"Vendor Has Payment Issues":0,"Work Is Delayed Due To FM":0},"Dec'25":{"Delay Due To Landlord":1,"Delay From HO Team":27,"Delay From Store":1,"Delay From Vendor Side":21,"Delay In Release Of PO":3,"Payment under process":0,"Product under observation":0,"Quotation Approval Pending From HO Facilities Team":2,"Vendor Has Payment Issues":0,"Work Is Delayed Due To FM":1},"Jan'26":{"Delay Due To Landlord":0,"Delay From HO Team":72,"Delay From Store":7,"Delay From Vendor Side":61,"Delay In Release Of PO":1,"Payment under process":0,"Product under observation":0,"Quotation Approval Pending From HO Facilities Team":11,"Vendor Has Payment Issues":0,"Work Is Delayed Due To FM":3},"Feb'26":{"Delay Due To Landlord":0,"Delay From HO Team":44,"Delay From Store":13,"Delay From Vendor Side":77,"Delay In Release Of PO":11,"Payment under process":0,"Product under observation":0,"Quotation Approval Pending From HO Facilities Team":16,"Vendor Has Payment Issues":0,"Work Is Delayed Due To FM":5},"Mar'26":{"Delay Due To Landlord":2,"Delay From HO Team":75,"Delay From Store":9,"Delay From Vendor Side":148,"Delay In Release Of PO":3,"Payment under process":37,"Product under observation":1,"Quotation Approval Pending From HO Facilities Team":15,"Vendor Has Payment Issues":1,"Work Is Delayed Due To FM":19}};
 const AGING_SNAP={"Jan'26":{"Delay Due To Landlord":68,"Delay From HO Team":69,"Delay From Store":90,"Delay From Vendor Side":69,"Delay In Release Of PO":88,"Payment under process":69,"Quotation Approval Pending From HO Facilities Team":69,"Work Is Delayed Due To FM":68},"Feb'26":{"Delay Due To Landlord":39,"Delay From HO Team":44,"Delay From Store":47,"Delay From Vendor Side":45,"Delay In Release Of PO":44,"Payment under process":40,"Quotation Approval Pending From HO Facilities Team":44,"Work Is Delayed Due To FM":41},"Mar'26":{"Delay Due To Landlord":12,"Delay From HO Team":17,"Delay From Store":15,"Delay From Vendor Side":16,"Delay In Release Of PO":23,"Payment under process":17,"Product under observation":18,"Quotation Approval Pending From HO Facilities Team":18,"Vendor Has Payment Issues":25,"Work Is Delayed Due To FM":16}};
